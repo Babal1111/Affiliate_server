@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const Users = require('../model/Users');
 
 const authMiddleware = {
     protect: async (request, response, next) => {
@@ -10,6 +11,14 @@ const authMiddleware = {
             }
 
             const user = jwt.verify(token, process.env.JWT_SECRET);
+
+            if(user) {
+                request.user = await  Users.findById({_id: user.id});
+
+            }
+            else{
+                return response.status(401).json({message:"invalid token"});  // ? why we added this
+            }
             request.user = user;
             next();
         } catch (error) {

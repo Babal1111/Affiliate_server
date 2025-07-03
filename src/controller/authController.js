@@ -32,7 +32,10 @@ const authController = {
                 email: data.email,
                 // This is the ensure backward compatibility
                 role: data.role ? data.role : 'admin',
-                adminId: data.adminId
+
+                adminId: data.adminId,
+                credits:data.credits // added thisafter payment integration
+
             };
             const token = jwt.sign(userDetails, secret, { expiresIn: '1h' });
 
@@ -93,7 +96,8 @@ const authController = {
                 id: user._id,
                 name: user.name,
                 email: user.email,
-                role: 'admin'
+                role: 'admin',
+                credits: user.credits
             };
             const token = jwt.sign(userDetails, secret, { expiresIn: '1h' });
 
@@ -143,7 +147,8 @@ const authController = {
                 id: data._id ? data._id : googleId,
                 username: email,
                 name: name,
-                role: data.role? data.role : 'admin'
+                role: data.role? data.role : 'admin',
+                credits: data.credits
             };
 
             const token = jwt.sign(user, secret, { expiresIn: '1h' });
