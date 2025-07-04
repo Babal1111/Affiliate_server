@@ -47,13 +47,13 @@ const paymentController = {
         const expectedSignature = crypto.createHmac("sha256",process.env.RAZORPAY_KEY_SECRET) //?
         .update(body.toString()).digest("hex");
 
-        if(razorpay_signature === expectedSignature){  // ? reverifying 
+        if(razorpay_signature !== expectedSignature){  // ? reverifying 
         return response.status(400).json({
             message: "payment verified"
         })
         }
 
-        const user = await Users.findbyId({_id: request.user.id});
+        const user = await Users.findById({_id: request.user.id});
         user.credits += Number(credits);
         await user.save();
 
@@ -70,3 +70,4 @@ const paymentController = {
     }
 
 }
+module.exports = paymentController;
