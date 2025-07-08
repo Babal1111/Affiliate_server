@@ -14,7 +14,12 @@ mongoose.connect(process.env.MONGO_URI)
     .catch(error => console.log(error));
 
 const app = express(); // Instance of express application
-
+app.use((request,response,next)=>{
+    if(request.originalUrl.startsWith('/payments/webhook')){
+        return next();
+    }
+    express.json()(request,response,next);
+})
 app.use(express.json()); // Middleware
 app.use(cookieParser()); // Middleware
 

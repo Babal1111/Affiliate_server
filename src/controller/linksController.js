@@ -1,3 +1,4 @@
+// const { default: Logout } = require("../../../client/src/pages/Logout");
 const Links = require("../model/Links");
 const Users = require("../model/Users");
 const linksController = {
@@ -6,6 +7,7 @@ const linksController = {
         try {
            // see pdf and change
            const user = await Users.findById({_id: request.user.id});
+        //    console.log(user.credits);
            if(user.credits < 1){
             return response.status(400).json({message: "You don't have enough credits"});
            }
