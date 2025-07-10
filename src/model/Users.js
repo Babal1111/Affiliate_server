@@ -23,4 +23,4 @@ const UsersSchema = new mongoose.Schema({
     subscription : {type:subscriptionSchema, default:()=>({})},
 });
 
-module.exports = mongoose.model('users', UsersSchema);
+module.exports = mongoose.models['users'] || mongoose.model('users', UsersSchema);

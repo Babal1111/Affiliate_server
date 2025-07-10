@@ -20,7 +20,7 @@ app.use((request,response,next)=>{
     }
     express.json()(request,response,next);
 })
-app.use(express.json()); // Middleware
+// app.use(express.json()); // Middleware
 app.use(cookieParser()); // Middleware
 
 const corsOptions = {

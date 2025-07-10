@@ -102,6 +102,7 @@ const paymentController = {
     },
 
     verifySubscription: async (request,response)=>{
+        //isme ham verify nhi kr re, just checking ki user dubarase subscription na le le
         try{
             const {subscription_id} = request.body;
             const subscription = await razorpay.subscription.fetch(subscription_id);
@@ -133,7 +134,7 @@ const paymentController = {
     handleWebhookEvent: async(request, response) =>{
         try{
             console.log("recieved event....");
-            const signature = request.header['x-raxorpay-signature'];
+            const signature = request.headers['x-razorpay-signature'];
             const body = request.body;
 
             const expectedSignature = crypto
@@ -157,7 +158,7 @@ const paymentController = {
             const subscriptionData = payload.payload.subscription.entity;
             const razorpaySubscriptionId = subscriptionData.id;
 
-            let userId = subscriptionData.notes?.userIdl
+            let userId = subscriptionData.notes?.userId;
             if(!userId){
                 console.log("userid not found via notes");
                 return response.status(400).send('userid not found via notes');
