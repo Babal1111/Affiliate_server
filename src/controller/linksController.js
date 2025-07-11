@@ -187,7 +187,7 @@
 // module.exports = linksController;
 
 const axios=require('axios');
-const Users=require('../model/users');
+const Users=require('../model/Users');
 const Links = require("../model/Links");
 const Clicks = require('../model/Clicks');
 const { getDeviceInfo } = require('../util/linksUtility');

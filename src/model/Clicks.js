@@ -19,3 +19,5 @@ const clicksSchema = new mongoose.Schema({
     clickedAt:{type: Date, default: Date.now},
 
 })
+
+module.exports = mongoose.model('Clicks', clicksSchema);

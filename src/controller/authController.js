@@ -4,7 +4,8 @@ const Users = require('../model/Users');
 const secret = process.env.JWT_SECRET;
 const { OAuth2Client } = require('google-auth-library');
 const { validationResult } = require('express-validator');
-
+const { subscribe } = require('../routes/authRoutes');
+const refreshTokenSecret = process.env.JWT_REFRESH_TOKEN_SECRET;
 const authController = {
     login: async (request, response) => {
         const errors = validationResult(request);
@@ -37,9 +38,16 @@ const authController = {
                 credits:data.credits // added thisafter payment integration
 
             };
-            const token = jwt.sign(userDetails, secret, { expiresIn: '1h' });
+            const token = jwt.sign(userDetails, secret, { expiresIn: '1m' });
+            const refreshToken =  jwt.sign(userDetails,refreshTokenSecret,{expiresIn:'7d'});
 
             response.cookie('jwtToken', token, {
+                httpOnly: true,
+                secure: true,
+                domain: 'localhost',
+                path: '/'
+            });
+            response.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: true,
                 domain: 'localhost',
@@ -54,6 +62,7 @@ const authController = {
 
     logout: (request, response) => {
         response.clearCookie('jwtToken');
+        response.clearCookie('refreshToken');
         response.json({ message: 'User logged out successfully' });
     },
 
@@ -151,9 +160,16 @@ const authController = {
                 credits: data.credits
             };
 
-            const token = jwt.sign(user, secret, { expiresIn: '1h' });
+            const token = jwt.sign(userDetails, secret, { expiresIn: '1m' });
+            const refreshToken =  jwt.sign(userDetails,refreshTokenSecret,{expiresIn:'7d'});
 
             response.cookie('jwtToken', token, {
+                httpOnly: true,
+                secure: true,
+                domain: 'localhost',
+                path: '/'
+            });
+            response.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: true,
                 domain: 'localhost',
@@ -165,6 +181,41 @@ const authController = {
             return response.status(500).json({ error: 'Internal server error' });
         }
     },
+
+    // new end point for refreshing a token 
+    refreshToken: async(request, response)=>{
+        try {
+            const refreshToken = request.cookiees?.refreshToken;
+            //  1st step always check wether the thig is avail/setor not if not send response
+            if(!refreshToken){
+                return response.status(401).json({message:"no refresh token"});
+            }
+            const decode = jwt.verify(refreshToken, refreshSecret);
+            const data = await Users.findById({_id: decode.id});// we are getting new data as through 7 days the data might have become stale/got changed, eg subscription canceled, links etc
+            // mongo was not directly sending it in json format so we made it in json format
+            const user = {
+                id: data._id,
+                username: data.email,
+                name: data.name,
+                role: data.role? data.role: admin,
+                credits: data.credits,
+                subscription: data.subscription
+            };
+
+            const newAccessToken = jwt.sign(user,secret,{expiresIn:'1m'});
+            response.cookie('jwtToken',newAccessToken,{
+                httpOnly: true,
+                secure: true,
+                domain:'localhost',
+                path:'/'
+            });
+        } catch (error) {
+           console.log(error);
+           response.status(500).json({
+            message:'Internal server Error'
+           });
+        }
+    }
 };
 
 module.exports = authController;
