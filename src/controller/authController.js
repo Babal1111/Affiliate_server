@@ -38,7 +38,7 @@ const authController = {
                 credits:data.credits // added thisafter payment integration
 
             };
-            const token = jwt.sign(userDetails, secret, { expiresIn: '1m' });
+            const token = jwt.sign(userDetails, secret, { expiresIn: '1h' });
             const refreshToken =  jwt.sign(userDetails,refreshTokenSecret,{expiresIn:'7d'});
 
             response.cookie('jwtToken', token, {
@@ -160,7 +160,7 @@ const authController = {
                 credits: data.credits
             };
 
-            const token = jwt.sign(userDetails, secret, { expiresIn: '1m' });
+            const token = jwt.sign(userDetails, secret, { expiresIn: '1h' });
             const refreshToken =  jwt.sign(userDetails,refreshTokenSecret,{expiresIn:'7d'});
 
             response.cookie('jwtToken', token, {
@@ -185,12 +185,12 @@ const authController = {
     // new end point for refreshing a token 
     refreshToken: async(request, response)=>{
         try {
-            const refreshToken = request.cookiees?.refreshToken;
+            const refreshToken = request.cookies?.refreshToken;
             //  1st step always check wether the thig is avail/setor not if not send response
             if(!refreshToken){
                 return response.status(401).json({message:"no refresh token"});
             }
-            const decode = jwt.verify(refreshToken, refreshSecret);
+            const decode = jwt.verify(refreshToken, refreshTokenSecret);
             const data = await Users.findById({_id: decode.id});// we are getting new data as through 7 days the data might have become stale/got changed, eg subscription canceled, links etc
             // mongo was not directly sending it in json format so we made it in json format
             const user = {
@@ -209,6 +209,8 @@ const authController = {
                 domain:'localhost',
                 path:'/'
             });
+            console.log("token refreshed")
+            return response.json({message:'Token refreshed', userDetails: user});
         } catch (error) {
            console.log(error);
            response.status(500).json({
