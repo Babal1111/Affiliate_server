@@ -23,7 +23,7 @@ const UsersSchema = new mongoose.Schema({
 
     subscription : {type:subscriptionSchema, default:()=>({})},
 
-    restetPasswordOtp :{type:String,required: false},
+    resetPasswordOtp :{type:String,required: false},
     resetPasswordExpires : {type:Date,required: false},
 });
 
