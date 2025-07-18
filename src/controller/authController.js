@@ -7,7 +7,7 @@ const { validationResult } = require('express-validator');
 const { subscribe } = require('../routes/authRoutes');
 const refreshTokenSecret = process.env.JWT_REFRESH_TOKEN_SECRET;
 const nodemailer = require('nodemailer');
-
+const { send } = require("../service/emailService");
 
 const authController = {
     login: async (request, response) => {
@@ -239,22 +239,10 @@ const authController = {
             // we didmt created a new user updated the extis=d one
             await user.save();
 
-           const transporter = nodemailer.createTransport({
-                    service:'gmail',
-                    auth:{
-                        user:process.env.ADMIN_EMAIL,
-                        pass:process.env.ADMIN_EMAIL_PASSWORD,
-                    }
-                });
+            const subject = "OTP to reset password from Affiliate++";
+            const text = `Your password reset OTP is: ${resetPasswordOtp}. It expires in 5 minutes.`;
 
-                const mailOptions = {
-                    from:process.env.ADMIN_EMAIL,
-                    to : email,
-                    subject:"OTP to reset password from Affiliate++",
-                    text:`Your password reset OTP is: ${resetPasswordOtp} it will expires in 5 minutes`
-                };
-
-                await transporter.sendMail(mailOptions);
+            await send(email, subject, text);
                 console.log("OTP sent to user");
                 return response.status(200).json({message:"OTP sent to email"});
             
