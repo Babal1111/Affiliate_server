@@ -112,9 +112,10 @@ const authController = {
 
             response.cookie('jwtToken', token, {
                 httpOnly: true,
-                secure: true,
+                secure: process.env.NODE_ENV=== 'production',
                 domain: 'localhost',
-                path: '/'
+                path: '/',
+                sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
             });
             response.json({ message: 'User authenticated', userDetails: userDetails });
         } catch (error) {
