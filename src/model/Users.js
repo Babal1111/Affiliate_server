@@ -18,6 +18,7 @@ const UsersSchema = new mongoose.Schema({
     googleId: { type: String, required: false},
     role: { type: String, default: 'admin' },
     adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'Users', index: true } , // ?
+    //user tables m jo ham employees define krenge,unke parent ki id aise agmin id mai store krenge
     credits:{type: Number, default:0},
 
     subscription : {type:subscriptionSchema, default:()=>({})},

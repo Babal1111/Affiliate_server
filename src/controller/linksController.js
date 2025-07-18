@@ -356,7 +356,9 @@ const linksController = {
       link.clickCount += 1;
       await link.save();
 
-      return  response.status(200).json({ url: link.originalUrl, clickCount: link.clickCount });
+      // return  response.status(200).json({ url: link.originalUrl, clickCount: link.clickCount });
+      
+      return  response.redirect(link.originalUrl);
 
     } catch (error) {
       console.error(error);

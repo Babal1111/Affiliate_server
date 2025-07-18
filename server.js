@@ -8,11 +8,14 @@ const authRoutes = require('./src/routes/authRoutes');
 const linksRoutes = require('./src/routes/linksRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 const paymentRoutes = require('./src/routes/paymentRoutes');
-
+console.log(" Trying to connect to MongoDB...");
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('Database connected'))
-    .catch(error => console.log(error));
-
+    .then(() => {
+        console.log(" Database connected");
+    })
+    .catch(error => {
+        console.error("Database connection error:", error);
+    });
 const app = express(); // Instance of express application
 app.use((request,response,next)=>{
     if(request.originalUrl.startsWith('/payments/webhook')){
