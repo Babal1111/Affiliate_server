@@ -22,6 +22,9 @@ const UsersSchema = new mongoose.Schema({
     credits:{type: Number, default:0},
 
     subscription : {type:subscriptionSchema, default:()=>({})},
+
+    restetPasswordOtp :{type:String,required: false},
+    resetPasswordExpires : {type:Date,required: false},
 });
 
 module.exports = mongoose.models['users'] || mongoose.model('users', UsersSchema);

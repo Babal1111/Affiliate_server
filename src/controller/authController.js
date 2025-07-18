@@ -6,6 +6,9 @@ const { OAuth2Client } = require('google-auth-library');
 const { validationResult } = require('express-validator');
 const { subscribe } = require('../routes/authRoutes');
 const refreshTokenSecret = process.env.JWT_REFRESH_TOKEN_SECRET;
+const nodemailer = require('nodemailer');
+
+
 const authController = {
     login: async (request, response) => {
         const errors = validationResult(request);
@@ -214,6 +217,77 @@ const authController = {
             return response.json({message:'Token refreshed', userDetails: user});
         } catch (error) {
            console.log(error);
+           response.status(500).json({
+            message:'Internal server Error'
+           });
+        }
+    },
+    sendResetPasswordToken: async(request,response)=>{
+        try {
+            // const userName = request.body.email; //both are same;
+            const {email} = request.body;
+            const user = await Users.findOne({email:email});
+            if(!user){
+                response.status(404).json({message: "user not exists with this username"});
+            }
+
+            // do we need to verify JWT?
+            const resetPasswordOtp = Math.random().toString(36).substring(2,8).toUpperCase();
+            
+            user.resetPasswordOtp = resetPasswordOtp;
+            user.resetPasswordExpires=  Date.now() + 5*60*1000;
+            // we didmt created a new user updated the extis=d one
+            await user.save();
+
+           const transporter = nodemailer.createTransport({
+                    service:'gmail',
+                    auth:{
+                        user:process.env.ADMIN_EMAIL,
+                        pass:process.env.ADMIN_EMAIL_PASSWORD,
+                    }
+                });
+
+                const mailOptions = {
+                    from:process.env.ADMIN_EMAIL,
+                    to : email,
+                    subject:"OTP to reset password from Affiliate++",
+                    text:`Your password reset OTP is: ${resetPasswordOtp} it will expires in 5 minutes`
+                };
+
+                await transporter.sendMail(mailOptions);
+                console.log("OTP sent to user");
+                return response.status(200).json({message:"OTP sent to email"});
+            
+        } catch (error) {
+             console.log(error);
+           response.status(500).json({
+            message:'Internal server Error'
+           });
+        }
+    },
+    resetPassword: async(request,response)=>{   
+        try {
+            const {email,otp,newPassword} = request.body;
+            
+            const user = await Users.findOne({email});
+            if(!user){
+                return response.status(404).json({message: "user not exists with this username"});
+            }
+            if(user.resetPasswordOtp !== otp){
+               return response.status(400).json({message: "Invalid OTP"});
+            }
+            if(user.resetPasswordExpires < Date.now()){
+              return response.status(400).json({message:"OTP has expired"});
+            }
+            const hashedPassword = await bcrypt.hash(newPassword,10);
+            user.password = hashedPassword;
+            user.resetPasswordOtp = null;
+            user.resetPasswordExpires = null;
+            await user.save();
+
+            return response.status(200).json({ message: "Password reset successful" });
+        } catch (error) {
+            console.log(error);
            response.status(500).json({
             message:'Internal server Error'
            });
