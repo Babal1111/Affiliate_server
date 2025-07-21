@@ -199,7 +199,7 @@ const linksController = {
       const user=await Users.findById({_id:request.user.id});
       if(user.credits<1){
         return response.status(400).json({
-          code:'INSUFFICIENT_FUNDS',
+          code:'INSUFFICIENT_FUNDS', 
           message:'Insufficient Credits'
         });
       }
@@ -221,15 +221,45 @@ const linksController = {
       });
     } catch (error) {
       console.error(error);
-      return response.status(500).json({ error: "Internal server error" });
+      return response.status(500).json({ error: "Internal server error (from " });
     }
   },
 
   getAll: async (request, response) => {
     try {
+      // now we'll apply pagination and set default values
+      const {
+        currentPage =0, pageSize=10, //pagination
+        searchTerm ='', //searchin
+        sortField='createdAt',sortOrder = 'desc' //sorting
+      } = request.query;
+      // lets make mongoquery
+      
       const userId=request.user.role==='admin'?request.user.id:request.user.adminId;
-      const links = await Links.find({ user: userId }).sort({ createdAt: -1 });
-      return response.status(200).json({ data: links });
+
+      const skip = parseInt(currentPage) * parseInt(pageSize);
+      const limit = parseInt(pageSize);
+      const sort = {[sortField]: sortOrder === 'desc' ? -1:1};
+
+      const query = {
+        user: userId
+      };
+
+      if(searchTerm){
+        query.$or = [
+          {campaignTitle: new RegExp(searchTerm, 'i')}, // i is for case-Insesitive
+          {category: new RegExp(searchTerm, 'i')},
+          {originalUrl: new RegExp(searchTerm, 'i')},
+        ]
+      }
+      const links = await Links.find(query).sort(sort).skip(skip).limit(limit);
+      const total = await Links.countDocuments(query);// how manyare remaining
+
+      return response.json({data :{links, total}});
+
+      // const userId=request.user.role==='admin'?request.user.id:request.user.adminId;
+      // const links = await Links.find({ user: userId }).sort({ createdAt: -1 });
+      // return response.status(200).json({ data: links });
     } catch (error) {
       console.error(error);
       return response.status(500).json({ error: "Internal server error" });

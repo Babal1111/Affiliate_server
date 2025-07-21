@@ -164,8 +164,8 @@ const authController = {
                 credits: data.credits
             };
 
-            const token = jwt.sign(userDetails, secret, { expiresIn: '1h' });
-            const refreshToken =  jwt.sign(userDetails,refreshTokenSecret,{expiresIn:'7d'});
+            const token = jwt.sign(user, secret, { expiresIn: '1h' });
+            const refreshToken =  jwt.sign(user,refreshTokenSecret,{expiresIn:'7d'});
 
             response.cookie('jwtToken', token, {
                 httpOnly: true,
